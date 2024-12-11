@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, height=device-height">
+    <title>Báo Cáo Rèn Luyện</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #fff;
+            line-height: 1.5;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 100%;
+            width: 100vw;
+            min-height: 100vh;
+            background: #fff;
+            padding: 16px;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            margin: 0 0 20px 0;
+            color: #333;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 0.95rem;
+            color: #444;
+        }
+
+        .required::after {
+            content: " *";
+            color: #ff4444;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            appearance: none;
+            -webkit-appearance: none;
+            background: #fff;
+        }
+
+        input[type="date"] {
+            min-height: 44px;
+            padding-right: 8px;
+        }
+
+        .file-input-container {
+            position: relative;
+            margin-bottom: 8px;
+        }
+
+        .file-input-label {
+            display: block;
+            padding: 12px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            min-height: 44px;
+            color: #666;
+            border: 2px dashed #ddd;
+        }
+
+        input[type="file"] {
+            opacity: 0;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .preview-container {
+            margin-top: 8px;
+            position: relative;
+        }
+
+        .preview-image {
+            width: 100%;
+            border-radius: 8px;
+            display: none;
+            margin-bottom: 8px;
+        }
+
+        .delete-preview {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(255,0,0,0.8);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            line-height: 24px;
+            text-align: center;
+            cursor: pointer;
+            display: none;
+        }
+
+        button[type="submit"] {
+            width: 100%;
+            padding: 16px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            margin-top: 16px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(76,175,80,0.3);
+        }
+
+        button[type="submit"]:active {
+            background: #43A047;
+            transform: translateY(1px);
+        }
+
+        .status {
+            text-align: center;
+            margin-top: 16px;
+            padding: 12px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .success {
+            background: #E8F5E9;
+            color: #2E7D32;
+            display: block;
+        }
+
+        .error {
+            background: #FFEBEE;
+            color: #C62828;
+            display: block;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 16px;
+        }
+
+        .loading:after {
+            content: "⏳";
+            animation: loading 1s infinite;
+        }
+
+        @keyframes loading {
+            0% { opacity: 0.2; }
+            50% { opacity: 1; }
+            100% { opacity: 0.2; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Báo Cáo Rèn Luyện</h2>
+        <form id="uploadForm" onsubmit="return handleSubmit(event)">
+            <div class="form-group">
+                <label for="name" class="required">Họ tên người tham gia</label>
+                <input type="text" id="name" name="name" required autocomplete="name">
+            </div>
+
+            <div class="form-group">
+                <label for="trainingDate" class="required">Ngày rèn luyện</label>
+                <input type="date" id="trainingDate" name="trainingDate" required>
+            </div>
+
+            <div class="form-group">
+                <label for="duration" class="required">Thời gian rèn luyện</label>
+                <input type="text" id="duration" name="duration" required 
+                       placeholder="Nhập thời gian rèn luyện">
+            </div>
+
+            <div class="form-group">
+                <label class="required">Ảnh bắt đầu rèn luyện</label>
+                <div class="file-input-container">
+                    <div class="file-input-label">Chọn ảnh bắt đầu</div>
+                    <input type="file" id="startImage" name="startImage" 
+                           accept="image/*"
+                           onchange="previewImage(event, 'previewStart')" required>
+                </div>
+                <div class="preview-container">
+                    <img id="previewStart" class="preview-image">
+                    <button type="button" class="delete-preview" 
+                            onclick="deleteImage('startImage', 'previewStart')">×</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="required">Ảnh kết thúc rèn luyện</label>
+                <div class="file-input-container">
+                    <div class="file-input-label">Chọn ảnh kết thúc</div>
+                    <input type="file" id="endImage" name="endImage" 
+                           accept="image/*"
+                           onchange="previewImage(event, 'previewEnd')" required>
+                </div>
+                <div class="preview-container">
+                    <img id="previewEnd" class="preview-image">
+                    <button type="button" class="delete-preview" 
+                            onclick="deleteImage('endImage', 'previewEnd')">×</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Ảnh kết quả (không bắt buộc)</label>
+                <div class="file-input-container">
+                    <div class="file-input-label">Chọn ảnh kết quả</div>
+                    <input type="file" id="resultImage" name="resultImage" 
+                           accept="image/*"
+                           onchange="previewImage(event, 'previewResult')">
+                </div>
+                <div class="preview-container">
+                    <img id="previewResult" class="preview-image">
+                    <button type="button" class="delete-preview" 
+                            onclick="deleteImage('resultImage', 'previewResult')">×</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="notes">Ghi chú (không bắt buộc)</label>
+                <textarea id="notes" name="notes" rows="3"></textarea>
+            </div>
+
+            <div id="loading" class="loading">Đang gửi báo cáo...</div>
+            <div id="status" class="status"></div>
+            <button type="submit">Gửi Báo Cáo</button>
+        </form>
+    </div>
+
+    <script>
+        window.onload = function() {
+            const today = new Date();
+            const defaultDate = `2024-12-${today.getDate().toString().padStart(2, '0')}`;
+            
+            const dateInput = document.getElementById('trainingDate');
+            dateInput.value = defaultDate;
+            dateInput.min = '2024-12-01';
+            dateInput.max = '2024-12-31';
+        }
+
+        function previewImage(event, previewId) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const preview = document.getElementById(previewId);
+            const deleteBtn = preview.nextElementSibling;
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+                deleteBtn.style.display = 'block';
+            }
+
+            reader.readAsDataURL(file);
+        }
+
+        function deleteImage(inputId, previewId) {
+            document.getElementById(inputId).value = '';
+            const preview = document.getElementById(previewId);
+            const deleteBtn = preview.nextElementSibling;
+            preview.style.display = 'none';
+            deleteBtn.style.display = 'none';
+            preview.src = '';
+        }
+
+        async function handleSubmit(event) {
+            event.preventDefault();
+            
+            const form = event.target;
+            const status = document.getElementById('status');
+            const loading = document.getElementById('loading');
+            const submitBtn = form.querySelector('button[type="submit"]');
+            
+            loading.style.display = 'block';
+            submitBtn.disabled = true;
+            status.className = 'status';
+            
+            try {
+                const formData = new FormData(form);
+                const imagePromises = ['startImage', 'endImage', 'resultImage'].map(async (fieldName) => {
+                    const file = formData.get(fieldName);
+                    if (!file || file.size === 0) return null;
+                    
+                    return new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            const userName = formData.get('name').replace(/\s+/g, '_');
+                            resolve({
+                                name: fieldName,
+                                data: e.target.result.split(',')[1],
+                                fileName: `${userName}_${fieldName}_${new Date().getTime()}`
+                            });
+                        };
+                        reader.readAsDataURL(file);
+                    });
+                });
+
+                const images = await Promise.all(imagePromises);
+                
+                const data = {
+                    name: formData.get('name'),
+                    trainingDate: formData.get('trainingDate'),
+                    duration: formData.get('duration'),
+                    notes: formData.get('notes'),
+                    startImage: images[0]?.data,
+                    endImage: images[1]?.data,
+                    resultImage: images[2]?.data,
+                    fileNames: {
+                        startImage: images[0]?.fileName,
+                        endImage: images[1]?.fileName,
+                        resultImage: images[2]?.fileName
+                    }
+                };
+
+                const response = await fetch('https://script.google.com/macros/s/AKfycbwqsDVOMJ02bohioKMG0raOgiL86KdbLrid5cClWk7BfHr75E1QV-hr11YvkwCEgG0y/exec', {
+                    method: 'POST',
+                    body: JSON.stringify(data),
+                    mode: 'no-cors'
+                });
+
+                status.textContent = 'Gửi báo cáo thành công!';
+                status.classList.add('success');
+                form.reset();
+                
+                document.querySelectorAll('.preview-image').forEach(img => {
+                    img.style.display = 'none';
+                    img.nextElementSibling.style.display = 'none';
+                });
+                
+                const today = new Date();
+                document.getElementById('trainingDate').value = 
+                    `2024-12-${today.getDate().toString().padStart(2, '0')}`;
+                
+            } catch (error) {
+                status.textContent = 'Có lỗi xảy ra. Vui lòng thử lại!';
+                status.classList.add('error');
+                console.error('Error:', error);
+            } finally {
+                loading.style.display = 'none';
+                submitBtn.disabled = false;
+            }
+        }
+    </script>
+
+<script>
+    function updateIframeHeight() {
+        const height = document.body.scrollHeight;
+        window.parent.postMessage({
+            'type': 'resize',
+            'height': height
+        }, '*');
+    }
+
+    // Cập nhật chiều cao khi trang tải xong
+    window.addEventListener('load', updateIframeHeight);
+    
+    // Cập nhật chiều cao khi có thay đổi về nội dung (ví dụ: hiển thị ảnh preview)
+    const observer = new MutationObserver(updateIframeHeight);
+    observer.observe(document.body, { 
+        childList: true, 
+        subtree: true 
+    });
+</script>
+</body>
+</html>
